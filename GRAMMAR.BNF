@@ -1,0 +1,25 @@
+program ::= line*
+
+line ::= number statement CR
+
+statement ::= PRINT expression
+              IF expression relop expression THEN statement
+              GOTO expression
+              LET var = expression
+              END
+
+relop ::= < (>|=|ε) | > (=|ε) | =
+
+expression ::= term | term (+|-) term
+
+term ::= factor | factor (*|/) factor
+
+factor ::= (-|ε)value | (expression)
+
+value ::= var | number
+
+var ::= A | B | C ... | Y | Z
+
+number ::= digit digit*
+
+digit ::= 0 | 1 | 2 | 3 | ... | 8 | 9
