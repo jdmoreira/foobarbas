@@ -93,8 +93,3 @@ struct SimpleLexer:Lexer {
                   status: .dataError)
     }
 }
-
-// MARK: AUX
-private extension BasicParser {
-
-}
