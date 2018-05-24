@@ -4,19 +4,19 @@
 
 // MARK: Protocol
 protocol Lexer {
-    
-    var line:UInt { get }
-    var column:UInt { get }
-    
+
+    var line: UInt { get }
+    var column: UInt { get }
+
     mutating func eat() -> Token
     mutating func peek() -> Token
     mutating func eat(until token: Token) -> Token
-    
+
     init(input: Input)
 }
 
 // MARK: Implementation
-struct SimpleLexer:Lexer {
+struct SimpleLexer: Lexer {
 
     private var input: Input
 
@@ -26,26 +26,26 @@ struct SimpleLexer:Lexer {
     init(input: Input) {
         self.input = input
     }
-    
+
     mutating func peek() -> Token {
         let beforeInput = input
-        
+
         let tokenToReturn = eat()
-        
+
         input = beforeInput
         return tokenToReturn
     }
-    
+
     mutating func eat(until token: Token) -> Token {
         while (token != peek()) {
-            let _ = eat()
+            _ = eat()
         }
         return peek()
     }
-    
+
     mutating func eat() -> Token {
         while(input.reachedEnd == false) {
-            
+
             // Trim whitespaces and increment line / numbers
             switch input.char {
             case " ", "\t":
@@ -68,7 +68,7 @@ struct SimpleLexer:Lexer {
             default:
                 break
             }
-            
+
             // Tokens
             var nextTokenStr = ""
             loop: while(true) {
@@ -80,15 +80,15 @@ struct SimpleLexer:Lexer {
                     input.advance()
                 }
             }
-            
+
             guard let token = Token(rawValue: nextTokenStr) else {
                 terminate(msg: "Lexer: Invalid token \"\(nextTokenStr)\" at line:\(line) column:\(column)",
                           status: .dataError)
             }
-            
+
             return token
         }
-        
+
         terminate(msg: "Lexer: Reached end of input at line:\(line) column:\(column)",
                   status: .dataError)
     }

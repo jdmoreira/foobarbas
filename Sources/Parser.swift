@@ -5,21 +5,21 @@
 // MARK: Protocol
 protocol Parser {
     mutating func run()
-    init(lexer:Lexer)
+    init(lexer: Lexer)
 }
 
 // MARK: Implementation
 struct BasicParser: Parser {
     fileprivate var lexer: Lexer
-    
-    fileprivate var variables: [String : Int] = [ : ]
-    fileprivate var lines: [Int : Lexer] = [ : ]
-    
+
+    fileprivate var variables: [String: Int] = [ : ]
+    fileprivate var lines: [Int: Lexer] = [ : ]
+
     mutating func run() {
         preparse() // We need to populate the lines array
         program()  // The entry point for the parser
     }
-    
+
     init(lexer: Lexer) {
         self.lexer = lexer
     }
@@ -27,7 +27,7 @@ struct BasicParser: Parser {
 
 // MARK: AUX
 private extension BasicParser {
-    
+
     mutating func preparse() {
         let beforeLexer = lexer
         while(true) {
@@ -37,7 +37,7 @@ private extension BasicParser {
             if(lexer.peek() == ._end) {
                 break
             } else {
-                let _ = lexer.eat(until: ._cr)
+                _ = lexer.eat(until: ._cr)
             }
             guard case Token._cr = lexer.eat() else {
                 error(msg: "Not a line. Must end with a CR")
@@ -45,7 +45,7 @@ private extension BasicParser {
         }
         lexer = beforeLexer
     }
-    
+
     func error(msg: String) -> Never {
         terminate(msg: "Parser: \(msg)\nline:\(lexer.line) column:\(lexer.column)",
                   status: .dataError)
@@ -54,10 +54,10 @@ private extension BasicParser {
 
 // MARK: Recursive Descent Parser
 private extension BasicParser {
-    
+
     mutating func number() -> Int? {
         var number: Int? = nil
-        
+
         while(true) {
             var digit: Int
             switch lexer.peek() {
@@ -84,14 +84,14 @@ private extension BasicParser {
             default:
                 return number
             }
-            
+
             number = number ?? 0
             number! *= 10
             number! += digit
-            let _ = lexer.eat()
+            _ = lexer.eat()
         }
     }
-    
+
     mutating func variable() -> String? {
         switch lexer.peek() {
         case ._A, ._B, ._C, ._D, ._E, ._F, ._G,
@@ -103,12 +103,12 @@ private extension BasicParser {
             return nil
         }
     }
-    
+
     mutating func relop() -> Bool {
         let lhs = expression()
         let relop = lexer.eat()
         let rhs = expression()
-        
+
         switch relop {
         case ._less:
             return lhs < rhs
@@ -126,7 +126,7 @@ private extension BasicParser {
             error(msg: "Not a relop. Invalid token")
         }
     }
-    
+
     mutating func value() -> Int {
         if let number = number() {
             return Int(number)
@@ -134,61 +134,61 @@ private extension BasicParser {
             guard let val = variables[variableName] else {
                 error(msg: "Use of undeclared variable \(variableName)")
             }
-            
+
             return val
         }
-        
+
         error(msg: "Not a value. Invalid token")
     }
-    
+
     mutating func factor() -> Int {
         var multiplier = 1
-        
+
         switch lexer.peek() {
         case ._parenthesisLeft:
-            let _ = lexer.eat() // left  parenthesis
+            _ = lexer.eat() // left  parenthesis
             let retVal = expression()
-            let _ = lexer.eat() // right parenthesis
+            _ = lexer.eat() // right parenthesis
             return retVal
         case ._minus:
-            let _ = lexer.eat() // -
+            _ = lexer.eat() // -
             multiplier = -1
             fallthrough
         default:
             return value() * multiplier
         }
     }
-    
+
     mutating func term() -> Int {
         let lhs = factor() // 1st factor
-        
+
         switch lexer.peek() {
         case ._asterisk:
-            let _ = lexer.eat() // *
+            _ = lexer.eat() // *
             return lhs * factor()
         case ._slash:
-            let _ = lexer.eat() // /
+            _ = lexer.eat() // /
             return lhs / factor()
         default:
             return lhs // 2nd factor is optional
         }
     }
-    
+
     mutating func expression() -> Int {
         let lhs = term() // 1st term
-        
+
         switch lexer.peek() {
         case ._plus:
-            let _ = lexer.eat() // +
+            _ = lexer.eat() // +
             return lhs + term()
         case ._minus:
-            let _ = lexer.eat() // -
+            _ = lexer.eat() // -
             return lhs - term()
         default:
             return lhs // 2nd term is optional
         }
     }
-    
+
     mutating func statement() -> Bool {
         switch lexer.eat() {
         case ._print:
@@ -200,7 +200,7 @@ private extension BasicParser {
                 }
                 return statement()
             } else {
-                let _ = lexer.eat(until: ._cr)
+                _ = lexer.eat(until: ._cr)
                 return false
             }
         case ._goto:
@@ -222,17 +222,17 @@ private extension BasicParser {
         }
         return false
     }
-    
+
     mutating func line() {
-        let _ = number()
+        _ = number()
         if statement() { // 'GOTO' returns true
             return       // and we need to skip the 'CR' check
         }
         guard case Token._cr = lexer.eat() else {
-            error(msg:"Not a line. Must end with a CR")
+            error(msg: "Not a line. Must end with a CR")
         }
     }
-    
+
     mutating func program() {
         while(true) {
             line()

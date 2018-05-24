@@ -4,14 +4,14 @@
 
 enum Token: String {
     case _cr = "\n"
-    
+
     case _if = "IF"
     case _then = "THEN"
     case _goto = "GOTO"
     case _let = "LET"
     case _print = "PRINT"
     case _end = "END"
-    
+
     case _plus = "+"
     case _minus = "-"
     case _asterisk = "*"

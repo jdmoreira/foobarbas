@@ -20,5 +20,5 @@ guard fd >= 0 else {
     terminate(msg: msg, status: .noInput)
 }
 
-var parser:Parser = BasicParser(lexer: SimpleLexer(input: FDInput(fd: fd)))
+var parser: Parser = BasicParser(lexer: SimpleLexer(input: FDInput(fd: fd)))
 parser.run()

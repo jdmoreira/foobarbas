@@ -15,12 +15,12 @@ enum TerminationStatus {
     case dataError
 }
 
-func terminate(msg:String? = nil, status:TerminationStatus = .success) -> Never {
-    
+func terminate(msg: String? = nil, status: TerminationStatus = .success) -> Never {
+
     if let msg = msg {
         fputs(msg + "\n", stderr)
     }
-    
+
     switch status {
     case .success:
         exit(EX_OK)
